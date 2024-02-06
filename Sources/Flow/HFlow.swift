@@ -33,15 +33,21 @@ public struct HFlow<Content: View>: View {
     ///   - rowSpacing: The distance between rows of subviews, or `nil` if you
     ///     want the flow to choose a default distance for each pair of rows.
     ///   - content: A view builder that creates the content of this flow.
-    public init(alignment: VerticalAlignment = .center,
-                itemSpacing: CGFloat? = nil,
-                rowSpacing: CGFloat? = nil,
-                @ViewBuilder content contentBuilder: () -> Content) {
-        content = contentBuilder()
-        layout = HFlowLayout(alignment: alignment,
-                             itemSpacing: itemSpacing,
-                             rowSpacing: rowSpacing)
-    }
+  public init(
+    alignment: VerticalAlignment = .center,
+    itemSpacing: CGFloat? = nil,
+    rowSpacing: CGFloat? = nil,
+    centerRowsHorizontally: Bool = false,
+    @ViewBuilder content contentBuilder: () -> Content
+  ) {
+    content = contentBuilder()
+    layout = HFlowLayout(
+      alignment: alignment,
+      itemSpacing: itemSpacing,
+      rowSpacing: rowSpacing,
+      centerRowsHorizontally: centerRowsHorizontally
+    )
+  }
 
     /// Creates a horizontal flow with the give spacing and vertical alignment.
     ///
@@ -51,14 +57,20 @@ public struct HFlow<Content: View>: View {
     ///   - spacing: The distance between adjacent subviews, or `nil` if you
     ///     want the flow to choose a default distance for each pair of subviews.
     ///   - content: A view builder that creates the content of this flow.
-    public init(alignment: VerticalAlignment = .center,
-                spacing: CGFloat? = nil,
-                @ViewBuilder content contentBuilder: () -> Content) {
-        self.init(alignment: alignment,
-                  itemSpacing: spacing,
-                  rowSpacing: spacing,
-                  content: contentBuilder)
-    }
+  public init(
+    alignment: VerticalAlignment = .center,
+    spacing: CGFloat? = nil,
+    centerRowsHorizontally: Bool = false,
+    @ViewBuilder content contentBuilder: () -> Content
+  ) {
+    self.init(
+      alignment: alignment,
+      itemSpacing: spacing,
+      rowSpacing: spacing,
+      centerRowsHorizontally: centerRowsHorizontally,
+      content: contentBuilder
+    )
+  }
 
     public var body: some View {
         layout {

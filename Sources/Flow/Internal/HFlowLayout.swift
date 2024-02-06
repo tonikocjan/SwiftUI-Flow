@@ -7,11 +7,15 @@ public struct HFlowLayout {
     public init(
         alignment: VerticalAlignment,
         itemSpacing: CGFloat?,
-        rowSpacing: CGFloat?
+        rowSpacing: CGFloat?,
+        centerRowsHorizontally: Bool
     ) {
-        layout = .horizontal(alignment: alignment,
-                             itemSpacing: itemSpacing,
-                             lineSpacing: rowSpacing)
+      layout = .horizontal(
+        alignment: alignment,
+        itemSpacing: itemSpacing,
+        lineSpacing: rowSpacing,
+        centerRowsHorizontally: centerRowsHorizontally
+      )
     }
 }
 

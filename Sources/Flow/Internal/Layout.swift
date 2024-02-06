@@ -8,6 +8,7 @@ struct FlowLayout {
     var lineSpacing: CGFloat?
     var reversedBreadth: Bool = false
     var reversedDepth: Bool = false
+    let centerRowsHorizontally: Bool
     let align: (Dimensions) -> CGFloat
 
     private struct ItemWithSpacing<T> {
@@ -68,6 +69,13 @@ struct FlowLayout {
         let originalBreadth = target.breadth
         let lines = calculateLayout(in: proposal, of: subviews)
         for line in lines {
+          var xOffset: CGFloat = .zero
+          if centerRowsHorizontally {
+            let itemsAccumulatedWidth = line.item.reduce(into: 0) { 
+              $0 += $1.size.breadth + $1.spacing 
+            }
+            xOffset = (bounds.width - itemsAccumulatedWidth) * 0.5
+          }
             if reversedDepth {
                 target.depth -= line.size.depth + line.spacing
             } else {
@@ -79,7 +87,7 @@ struct FlowLayout {
                 } else {
                     target.breadth += item.spacing
                 }
-                alignAndPlace(item, in: line, at: target)
+              alignAndPlace(item, in: line, at: target, xOffset: xOffset)
                 if !reversedBreadth {
                     target.breadth += item.size.breadth
                 }
@@ -91,16 +99,30 @@ struct FlowLayout {
         }
     }
 
-    private func alignAndPlace(_ item: Line.Element,
-                               in line: Lines.Element,
-                               at placement: Size) {
-        var placement = placement
-        let proposedSize = ProposedViewSize(size: Size(breadth: item.size.breadth, depth: line.size.depth), axis: axis)
-        let depth = item.size.depth
-        if depth > 0 {
-            placement.depth += (align(item.item.dimensions(proposedSize)) / depth) * (line.size.depth - depth)
-        }
-        item.item.place(at: .init(size: placement, axis: axis), anchor: .topLeading, proposal: proposedSize)
+  private func alignAndPlace(
+    _ item: Line.Element,
+    in line: Lines.Element,
+    at placement: Size,
+    xOffset: CGFloat
+  ) {
+      var placement = placement
+      let proposedSize = ProposedViewSize(
+        size: Size(breadth: item.size.breadth, depth: line.size.depth),
+        axis: axis
+      )
+      let depth = item.size.depth
+      if depth > 0 {
+        placement.depth += (align(item.item.dimensions(proposedSize)) / depth) * (line.size.depth - depth)
+      }
+    placement.breadth += xOffset
+      item.item.place(
+        at: .init(
+          size: placement,
+          axis: axis
+        ),
+        anchor: .topLeading,
+        proposal: proposedSize
+      )
     }
 
     private func calculateLayout(in proposedSize: ProposedViewSize,
@@ -139,25 +161,36 @@ struct FlowLayout {
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 extension FlowLayout {
-    static func vertical(alignment: HorizontalAlignment,
-                         itemSpacing: CGFloat?,
-                         lineSpacing: CGFloat?) -> FlowLayout {
-        .init(axis: .vertical,
-              itemSpacing: itemSpacing,
-              lineSpacing: lineSpacing) {
-            $0[alignment]
-        }
+  static func vertical(
+    alignment: HorizontalAlignment,
+    itemSpacing: CGFloat?,
+    lineSpacing: CGFloat?
+  ) -> FlowLayout {
+    .init(
+      axis: .vertical,
+      itemSpacing: itemSpacing,
+      lineSpacing: lineSpacing,
+      centerRowsHorizontally: false
+    ) {
+      $0[alignment]
     }
+  }
 
-    static func horizontal(alignment: VerticalAlignment,
-                           itemSpacing: CGFloat?,
-                           lineSpacing: CGFloat?) -> FlowLayout {
-        .init(axis: .horizontal,
-              itemSpacing: itemSpacing,
-              lineSpacing: lineSpacing) {
-            $0[alignment]
-        }
+  static func horizontal(
+    alignment: VerticalAlignment,
+    itemSpacing: CGFloat?,
+    lineSpacing: CGFloat?,
+    centerRowsHorizontally: Bool
+  ) -> FlowLayout {
+    .init(
+      axis: .horizontal,
+      itemSpacing: itemSpacing,
+      lineSpacing: lineSpacing,
+      centerRowsHorizontally: centerRowsHorizontally
+    ) {
+      $0[alignment]
     }
+  }
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
